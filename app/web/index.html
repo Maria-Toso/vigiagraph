@@ -1,0 +1,157 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>VigiaGraph | Fraud Intelligence</title>
+    <style>
+      :root {
+        color-scheme: dark;
+        --bg: #07100f;
+        --panel: rgba(15, 31, 29, 0.84);
+        --panel-2: #112522;
+        --border: rgba(107, 239, 205, 0.14);
+        --text: #eefbf7;
+        --muted: #8ba49d;
+        --accent: #58e6bd;
+        --cyan: #55c7e8;
+        --danger: #ff6b7a;
+        --warning: #ffbf69;
+      }
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        min-height: 100vh;
+        color: var(--text);
+        font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        background:
+          radial-gradient(circle at 12% 8%, rgba(32, 172, 137, 0.18), transparent 30%),
+          radial-gradient(circle at 92% 0%, rgba(40, 124, 159, 0.13), transparent 27%),
+          var(--bg);
+      }
+      .shell { width: min(1240px, calc(100% - 36px)); margin: 0 auto; padding: 32px 0 60px; }
+      header { display: flex; justify-content: space-between; align-items: center; gap: 24px; margin-bottom: 28px; }
+      .brand { display: flex; align-items: center; gap: 14px; }
+      .mark {
+        width: 46px; height: 46px; display: grid; place-items: center; border-radius: 14px;
+        color: #04110e; font-weight: 900; font-size: 20px;
+        background: linear-gradient(135deg, var(--accent), var(--cyan));
+        box-shadow: 0 0 26px rgba(88, 230, 189, 0.18);
+      }
+      h1 { font-size: 20px; margin: 0; letter-spacing: -0.02em; }
+      .subtitle { color: var(--muted); margin-top: 4px; font-size: 13px; }
+      .actions { display: flex; gap: 10px; flex-wrap: wrap; }
+      button, .link-button {
+        border: 1px solid var(--border); color: var(--text); background: var(--panel-2);
+        padding: 10px 14px; border-radius: 10px; font: inherit; font-size: 13px;
+        cursor: pointer; text-decoration: none; transition: 160ms ease;
+      }
+      button:hover, .link-button:hover { transform: translateY(-1px); border-color: rgba(88,230,189,.4); }
+      button.primary { color: #04110e; font-weight: 800; border: 0; background: var(--accent); }
+      .status { display: flex; align-items: center; gap: 8px; color: var(--muted); font-size: 12px; }
+      .status::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 12px var(--accent); }
+      .grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; }
+      .card, .table-wrap {
+        border: 1px solid var(--border); border-radius: 16px; background: var(--panel);
+        box-shadow: 0 16px 46px rgba(0,0,0,.16); backdrop-filter: blur(12px);
+      }
+      .card { padding: 19px; }
+      .label { color: var(--muted); font-size: 12px; text-transform: uppercase; letter-spacing: .08em; }
+      .value { margin-top: 10px; font-size: 30px; font-weight: 800; letter-spacing: -.04em; }
+      .value.danger { color: var(--danger); }
+      .value.warning { color: var(--warning); }
+      .section-head { display: flex; justify-content: space-between; align-items: end; margin: 30px 0 12px; }
+      h2 { font-size: 16px; margin: 0; }
+      .table-wrap { overflow: hidden; }
+      table { width: 100%; border-collapse: collapse; font-size: 13px; }
+      th, td { padding: 14px 16px; text-align: left; border-bottom: 1px solid rgba(107,239,205,.08); }
+      th { color: var(--muted); font-size: 11px; text-transform: uppercase; letter-spacing: .07em; }
+      tbody tr:hover { background: rgba(88,230,189,.03); }
+      .pill { display: inline-block; min-width: 72px; padding: 5px 8px; border-radius: 999px; text-align: center; font-size: 11px; font-weight: 800; text-transform: uppercase; }
+      .low { color: var(--accent); background: rgba(88,230,189,.1); }
+      .medium { color: var(--warning); background: rgba(255,191,105,.1); }
+      .high, .critical { color: var(--danger); background: rgba(255,107,122,.1); }
+      .empty { text-align: center; color: var(--muted); padding: 40px; }
+      #toast { position: fixed; right: 24px; bottom: 24px; padding: 12px 16px; border-radius: 10px; background: var(--panel-2); border: 1px solid var(--border); opacity: 0; transform: translateY(10px); pointer-events: none; transition: .2s ease; }
+      #toast.show { opacity: 1; transform: translateY(0); }
+      @media (max-width: 850px) { .grid { grid-template-columns: repeat(2, 1fr); } header { align-items: flex-start; flex-direction: column; } .table-wrap { overflow-x: auto; } table { min-width: 720px; } }
+      @media (max-width: 520px) { .grid { grid-template-columns: 1fr; } .shell { width: min(100% - 24px, 1240px); padding-top: 20px; } }
+    </style>
+  </head>
+  <body>
+    <main class="shell">
+      <header>
+        <div class="brand">
+          <div class="mark">VG</div>
+          <div><h1>VigiaGraph</h1><div class="subtitle">Fraud intelligence, sem caixa-preta.</div></div>
+        </div>
+        <div class="actions">
+          <span class="status">API operacional</span>
+          <a class="link-button" href="/docs">Documentacao da API</a>
+          <button class="primary" id="generate">Gerar dados de demonstracao</button>
+        </div>
+      </header>
+
+      <section class="grid">
+        <article class="card"><div class="label">Transacoes analisadas</div><div class="value" id="total">0</div></article>
+        <article class="card"><div class="label">Sinalizadas</div><div class="value warning" id="flagged">0</div></article>
+        <article class="card"><div class="label">Risco critico</div><div class="value danger" id="critical">0</div></article>
+        <article class="card"><div class="label">Score medio</div><div class="value" id="average">0</div></article>
+      </section>
+
+      <div class="section-head">
+        <div><h2>Analises recentes</h2><div class="subtitle">Decisoes explicadas pelas regras acionadas</div></div>
+      </div>
+      <section class="table-wrap">
+        <table>
+          <thead><tr><th>Transacao</th><th>Usuario</th><th>Valor</th><th>Score</th><th>Nivel</th><th>Regras</th></tr></thead>
+          <tbody id="transactions"><tr><td colspan="6" class="empty">Nenhuma transacao analisada.</td></tr></tbody>
+        </table>
+      </section>
+    </main>
+    <div id="toast"></div>
+    <script>
+      const money = new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" });
+      const toast = (message) => {
+        const element = document.querySelector("#toast");
+        element.textContent = message; element.classList.add("show");
+        setTimeout(() => element.classList.remove("show"), 2600);
+      };
+      async function refresh() {
+        const [summaryResponse, transactionsResponse] = await Promise.all([
+          fetch("/api/v1/dashboard/summary"), fetch("/api/v1/transactions?limit=20")
+        ]);
+        const summary = await summaryResponse.json();
+        const transactions = await transactionsResponse.json();
+        document.querySelector("#total").textContent = summary.total_transactions;
+        document.querySelector("#flagged").textContent = summary.flagged_transactions;
+        document.querySelector("#critical").textContent = summary.critical_transactions;
+        document.querySelector("#average").textContent = summary.average_risk_score;
+        const body = document.querySelector("#transactions");
+        if (!transactions.length) return;
+        body.innerHTML = transactions.map(item => `
+          <tr>
+            <td title="${item.transaction_id}">${item.transaction_id.slice(0, 8)}...</td>
+            <td>${item.user_id}</td>
+            <td>${money.format(item.amount)}</td>
+            <td>${item.risk_score}</td>
+            <td><span class="pill ${item.risk_level}">${item.risk_level}</span></td>
+            <td>${item.triggered_rules.map(rule => rule.code).join(", ") || "Nenhuma"}</td>
+          </tr>`).join("");
+      }
+      document.querySelector("#generate").addEventListener("click", async (event) => {
+        event.currentTarget.disabled = true;
+        try {
+          const response = await fetch("/api/v1/demo/generate", {
+            method: "POST", headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ count: 60, fraud_ratio: 0.25, seed: Date.now() })
+          });
+          if (!response.ok) throw new Error("Falha ao gerar dados");
+          await refresh(); toast("60 transacoes analisadas com sucesso.");
+        } catch (error) { toast(error.message); }
+        finally { event.currentTarget.disabled = false; }
+      });
+      refresh().catch(() => toast("Nao foi possivel carregar o dashboard."));
+    </script>
+  </body>
+</html>
